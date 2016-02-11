@@ -41,4 +41,5 @@ done
 
 git rev-list ${@:---all} | sort \
   | uniq --check-chars="$digits" --all-repeated \
-  | uniq --check-chars="$digits" --group
+  | uniq --check-chars="$digits" --group \
+  | less -FRX

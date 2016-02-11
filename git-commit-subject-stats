@@ -48,4 +48,4 @@ git shortlog "$@" | awk '
   commits = 0;
   chars = 0;
   long = 0;
-}'
+}' | less -FRX
