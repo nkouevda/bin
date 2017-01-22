@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 usage() {
   cat <<EOF
 usage: git commit-subject-stats [<options>] [--] [<shortlog args>]
