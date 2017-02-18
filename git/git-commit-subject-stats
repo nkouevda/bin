@@ -8,9 +8,9 @@ usage: git commit-subject-stats [<options>] [--] [<shortlog args>]
 
 For each user in the output of shortlog, print:
     (1) number of commits
-    (2) number of commits with subjects longer than 50 chars
-    (3) average commit subject length
-    (4) ratio of (2) to (1)
+    (2) average commit subject length
+    (3) number of commits with subjects longer than 50 chars
+    (4) ratio of (3) to (1)
     (5) name
 
 Options:
@@ -40,14 +40,16 @@ git shortlog "$@" | awk '
   sub(/ \([0-9]+\):$/, "");
   name = $0;
 }
+
 /^[ ]/ {
   ++commits;
   chars += length($0) - 6;
-  long += length($0) > 56;
+  too_long += length($0) > 56;
 }
+
 /^$/ {
-  printf "%d\t%d\t%.3f\t%.3f\t%s\n", commits, long, chars / commits, long / commits, name;
+  printf "%d\t%.3f\t%d\t%.3f\t%s\n", commits, chars / commits, too_long, too_long / commits, name;
   commits = 0;
   chars = 0;
-  long = 0;
+  too_long = 0;
 }' | less -FRX
