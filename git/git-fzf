@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git fzf [<options>] [--] <mode> [<xargs command>]
+
+Invoke fzf, with the input depending on <mode>.
+
+If <xargs command> is given, invoke it via xargs with the output of fzf.
+Otherwise, the output of this command is the output of fzf, unmodified.
+
+Options:
+    -h, --help
+        Show this help message and exit.
+
+    -v, --verbose
+        If <xargs command> is given, pass --verbose to xargs.
+
+Modes:
+    branch
+        Select from branches.
+
+    ls-files
+        Select from all tracked and untracked files, but not ignored files.
+
+    status
+        Select from the output of "git status", i.e. all staged, unstaged, and
+        untracked files.
+
+    status-unstaged
+        Like "status", but only unstaged and untracked files.
+
+    tag
+        Select from tags.
+
+    Note: If <xargs command> is not given, the output of this command is
+    null-terminated for modes "ls-files", "status", and "status-unstaged".
+
+Examples:
+    "git add" the selected path(s):
+
+        $ git fzf status-unstaged git add --
+
+    "git checkout" the selected branch:
+
+        $ git fzf branch git checkout
+EOF
+}
+
+fzf_wrapper() {
+  local fzf_options=("--exact" "--multi" "--select-1" "--exit-0")
+
+  if [[ -n "$null_terminated" ]]; then
+    fzf_options+=("--read0" "--print0")
+  fi
+
+  fzf "${fzf_options[@]}"
+}
+
+xargs_or_noop() {
+  if [[ -n "${xargs_command[@]}" ]]; then
+    local xargs_options=("--no-run-if-empty")
+
+    if [[ -n "$null_terminated" ]]; then
+      xargs_options+=("--null")
+    fi
+
+    if [[ -n "$verbose" ]]; then
+      xargs_options+=("--verbose")
+    fi
+
+    xargs "${xargs_options[@]}" "${xargs_command[@]}"
+  else
+    cat
+  fi
+}
+
+null_terminated=
+verbose=
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    -v|--verbose)
+      verbose=1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+if (( ! $# )); then
+  usage
+  exit 1
+fi
+
+mode="$1"
+xargs_command=("${@:2}")
+
+case "$mode" in
+  branch)
+    git branch \
+      | fzf_wrapper \
+      | cut --characters=3- \
+      | xargs_or_noop
+    ;;
+  ls-files)
+    null_terminated=1
+    git ls-files --cached --others --exclude-standard -z \
+      | fzf_wrapper \
+      | xargs_or_noop
+    ;;
+  status)
+    null_terminated=1
+    git status --porcelain -z \
+      | fzf_wrapper \
+      | cut --zero-terminated --characters=4- \
+      | xargs_or_noop
+    ;;
+  status-unstaged)
+    null_terminated=1
+    git status --porcelain -z \
+      | sed --null-data '/^. /d' \
+      | fzf_wrapper \
+      | cut --zero-terminated --characters=4- \
+      | xargs_or_noop
+    ;;
+  tag)
+    git tag --list \
+      | fzf_wrapper \
+      | xargs_or_noop
+    ;;
+  *)
+    printf "invalid mode: %s\n" "$mode" >&2
+    exit 1
+    ;;
+esac
