@@ -45,7 +45,21 @@ done
 [[ -n "$digits" ]] || digits="$(git config core.abbrev)" || digits="7"
 
 git rev-list ${@:---all} \
+  | awk -v digits="$digits" '
+    {
+      abbrev = substr($0, 0, digits)
+      hashes[abbrev][length(hashes[abbrev])] = $0
+    }
+
+    END {
+      for (abbrev in hashes) {
+        if (length(hashes[abbrev]) > 1) {
+          for (i in hashes[abbrev]) {
+            print hashes[abbrev][i]
+          }
+        }
+      }
+    }' \
   | sort \
-  | uniq --check-chars="$digits" --all-repeated \
   | uniq --check-chars="$digits" --group \
   | less -FRX
