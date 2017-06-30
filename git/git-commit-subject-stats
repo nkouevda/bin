@@ -14,7 +14,8 @@ For each user in the output of shortlog, print:
     (5) name
 
 Options:
-    -h, --help          show this help message and exit
+    -h, --help
+        Show this help message and exit.
 EOF
 }
 
@@ -35,21 +36,23 @@ while (( $# )); do
   shift
 done
 
-git shortlog "$@" | awk '
-/^[^ ]/ {
-  sub(/ \([0-9]+\):$/, "");
-  name = $0;
-}
+git shortlog "$@" \
+  | awk '
+    /^[^ ]/ {
+      sub(/ \([0-9]+\):$/, "")
+      name = $0
+    }
 
-/^[ ]/ {
-  ++commits;
-  chars += length($0) - 6;
-  too_long += length($0) > 56;
-}
+    /^ / {
+      ++commits
+      chars += length($0) - 6
+      too_long += length($0) > 56
+    }
 
-/^$/ {
-  printf "%d\t%.3f\t%d\t%.3f\t%s\n", commits, chars / commits, too_long, too_long / commits, name;
-  commits = 0;
-  chars = 0;
-  too_long = 0;
-}' | less -FRX
+    /^$/ {
+      printf "%d\t%.3f\t%d\t%.3f\t%s\n", commits, chars / commits, too_long, too_long / commits, name
+      commits = 0
+      chars = 0
+      too_long = 0
+    }' \
+  | less -FRX

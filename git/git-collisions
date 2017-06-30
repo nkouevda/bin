@@ -11,8 +11,11 @@ Print commit hash collisions.
 If no <rev-list args> are specified, default to "--all".
 
 Options:
-    -d, --digits        number of leading digits; default core.abbrev or 7
-    -h, --help          show this help message and exit
+    -d, --digits
+        Number of leading digits; default: core.abbrev or 7.
+
+    -h, --help
+        Show this help message and exit.
 EOF
 }
 
@@ -41,7 +44,8 @@ done
 
 [[ -n "$digits" ]] || digits="$(git config core.abbrev)" || digits="7"
 
-git rev-list ${@:---all} | sort \
+git rev-list ${@:---all} \
+  | sort \
   | uniq --check-chars="$digits" --all-repeated \
   | uniq --check-chars="$digits" --group \
   | less -FRX
