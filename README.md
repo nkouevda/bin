@@ -1,6 +1,6 @@
-# bin
+# git-util
 
-Miscellaneous executables.
+Various `git` utilities.
 
 ## Installation
 
