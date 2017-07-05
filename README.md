@@ -4,14 +4,18 @@ Various `git` utilities.
 
 ## Installation
 
-To install everything by copying:
+To `cp` all utilities to `~/bin`:
 
     make
 
-To create symbolic links instead, use `LN=1`:
+To create symbolic links instead of copying, use `LN=1`:
 
     make LN=1
 
-To install selectively, specify the desired files. For example:
+To install selectively, specify the desired utilities:
 
-    make LN=1 git/*
+    make git-fzf
+
+To install in a different directory, set `prefix`:
+
+    make prefix=/usr/local

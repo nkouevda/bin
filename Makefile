@@ -1,26 +1,25 @@
+# Location of this file
+root := $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))")
+
+prefix := $(HOME)
+bindir := $(prefix)/bin
+
+programs := $(wildcard $(root)/bin/git-*)
+program_names := $(notdir $(programs))
+
 # Symlink if LN=1; copy otherwise
 ifeq ($(LN),1)
-  COPY := ln -fsv
+  install := ln -fs
 else
-  COPY := cp -fv
+  install := cp -f
 endif
 
-# Location of this file
-ROOT := $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))")
+.PHONY: all bindir $(program_names)
 
-# Destination dir
-DEST ?= $(HOME)/bin
+all: $(program_names)
 
-# All executables
-TARGETS := $(wildcard */*)
+$(program_names): bindir
+	$(install) "$(root)/bin/$@" "$(DESTDIR)$(bindir)"
 
-# Phony targets
-.PHONY: all dest $(TARGETS)
-
-all: $(TARGETS)
-
-$(TARGETS): dest
-	$(COPY) "$(ROOT)"/$@ "$(DEST)"
-
-dest:
-	mkdir -pv "$(DEST)"
+bindir:
+	mkdir -p "$(DESTDIR)$(bindir)"
