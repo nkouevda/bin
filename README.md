@@ -19,3 +19,7 @@ To install selectively, specify the desired utilities:
 To install in a different directory, set `prefix`:
 
     make prefix=/usr/local
+
+## License
+
+Licensed under the [MIT License](http://www.opensource.org/licenses/MIT).
