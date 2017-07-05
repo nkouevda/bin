@@ -35,6 +35,10 @@ while (( $# )); do
       shift
       break
       ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
     *)
       break
       ;;
@@ -43,8 +47,9 @@ while (( $# )); do
 done
 
 [[ -n "$digits" ]] || digits="$(git config core.abbrev)" || digits="7"
+rev_list_args=("${@:---all}")
 
-git rev-list ${@:---all} \
+git rev-list "${rev_list_args[@]}" \
   | awk -v digits="$digits" '
     {
       abbrev = substr($0, 0, digits)

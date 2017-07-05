@@ -63,12 +63,12 @@ xargs_or_noop() {
   if [[ -n "${xargs_command[@]}" ]]; then
     local xargs_options=("--no-run-if-empty")
 
-    if [[ -n "$null_terminated" ]]; then
-      xargs_options+=("--null")
-    fi
-
     if [[ -n "$verbose" ]]; then
       xargs_options+=("--verbose")
+    fi
+
+    if [[ -n "$null_terminated" ]]; then
+      xargs_options+=("--null")
     fi
 
     xargs "${xargs_options[@]}" "${xargs_command[@]}"
@@ -77,7 +77,6 @@ xargs_or_noop() {
   fi
 }
 
-null_terminated=
 verbose=
 
 while (( $# )); do
@@ -93,6 +92,10 @@ while (( $# )); do
       shift
       break
       ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
     *)
       break
       ;;
@@ -107,6 +110,7 @@ fi
 
 mode="$1"
 xargs_command=("${@:2}")
+null_terminated=
 
 case "$mode" in
   branch)
@@ -142,7 +146,7 @@ case "$mode" in
       | xargs_or_noop
     ;;
   *)
-    printf "invalid mode: %s\n" "$mode" >&2
+    printf "error: invalid mode: %s\n" "$mode" >&2
     exit 1
     ;;
 esac

@@ -29,6 +29,10 @@ while (( $# )); do
       shift
       break
       ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
     *)
       break
       ;;
@@ -36,7 +40,9 @@ while (( $# )); do
   shift
 done
 
-git shortlog "$@" \
+shortlog_args=("$@")
+
+git shortlog "${shortlog_args[@]}" \
   | awk '
     /^[^ ]/ {
       sub(/ \([0-9]+\):$/, "")
