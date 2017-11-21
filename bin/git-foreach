@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git foreach [<options>] [--] <dir> <command>
+
+Execute <command> in each git directory (one that contains a .git directory)
+under <dir>.
+
+Options:
+    -h, --help
+        Show this help message and exit.
+
+    -q, --quiet
+        Do not print each directory name before executing.
+
+Examples:
+    Execute "git status" in each git directory under the current directory:
+
+        $ git foreach . git status
+EOF
+}
+
+print="-print"
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    -q|--quiet)
+      print=
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+if (( $# < 2 )); then
+  usage
+  exit 1
+fi
+
+dir="$1"
+execdir_command=("${@:2}")
+
+find -- "$dir" \
+  -type d \
+  -name '.git' \
+  $print \
+  -execdir "${execdir_command[@]}" \;
