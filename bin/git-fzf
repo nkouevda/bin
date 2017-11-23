@@ -50,7 +50,7 @@ EOF
 }
 
 fzf_wrapper() {
-  local fzf_options=("--exact" "--multi" "--select-1" "--exit-0")
+  local fzf_options=("--multi" "--select-1" "--exit-0")
 
   if [[ -n "$null_terminated" ]]; then
     fzf_options+=("--read0" "--print0")
@@ -86,7 +86,7 @@ while (( $# )); do
       exit
       ;;
     -v|--verbose)
-      verbose=1
+      verbose="1"
       ;;
     --)
       shift
@@ -100,6 +100,7 @@ while (( $# )); do
       break
       ;;
   esac
+
   shift
 done
 
@@ -120,20 +121,20 @@ case "$mode" in
       | xargs_or_noop
     ;;
   ls-files)
-    null_terminated=1
+    null_terminated="1"
     git ls-files --cached --others --exclude-standard -z \
       | fzf_wrapper \
       | xargs_or_noop
     ;;
   status)
-    null_terminated=1
+    null_terminated="1"
     git status --porcelain -z \
       | fzf_wrapper \
       | cut --zero-terminated --characters=4- \
       | xargs_or_noop
     ;;
   status-unstaged)
-    null_terminated=1
+    null_terminated="1"
     git status --porcelain -z \
       | sed --null-data '/^. /d' \
       | fzf_wrapper \

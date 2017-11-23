@@ -7,8 +7,8 @@ bindir := $(prefix)/bin
 programs := $(wildcard $(root)/bin/git-*)
 program_names := $(notdir $(programs))
 
-# Symlink if LN=1; copy otherwise
-ifeq ($(LN),1)
+# Symlink if `ln=1`; copy otherwise
+ifeq ($(ln),1)
   install := ln -fs
 else
   install := cp -f

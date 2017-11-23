@@ -4,15 +4,15 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git collisions [<options>] [--] [<rev-list args>]
+usage: git collisions [<options>] [--] [<git rev-list args>]
 
 Print commit hash collisions.
 
-If no <rev-list args> are specified, default to "--all".
+If no <git rev-list args> are specified, default to "--all".
 
 Options:
-    -d, --digits
-        Number of leading digits; default: core.abbrev or 7.
+    -d <n>, --digits <n>
+        Find collisions in the first <n> digits; default: core.abbrev or 7.
 
     -h, --help
         Show this help message and exit.
@@ -24,6 +24,10 @@ digits=
 while (( $# )); do
   case "$1" in
     -d|--digits)
+      if (( $# == 1 )); then
+        printf "error: option requires a value: %s\n" "$1" >&2
+        exit 1
+      fi
       shift
       digits="$1"
       ;;
@@ -43,13 +47,14 @@ while (( $# )); do
       break
       ;;
   esac
+
   shift
 done
 
 [[ -n "$digits" ]] || digits="$(git config core.abbrev)" || digits="7"
-rev_list_args=("${@:---all}")
+git_rev_list_args=("${@:---all}")
 
-git rev-list "${rev_list_args[@]}" \
+git rev-list "${git_rev_list_args[@]}" \
   | awk -v digits="$digits" '
     {
       abbrev = substr($0, 0, digits)

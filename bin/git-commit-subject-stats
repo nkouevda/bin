@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git commit-subject-stats [<options>] [--] [<shortlog args>]
+usage: git commit-subject-stats [<options>] [--] [<git shortlog args>]
 
 For each user in the output of shortlog, print:
     (1) number of commits
@@ -37,12 +37,13 @@ while (( $# )); do
       break
       ;;
   esac
+
   shift
 done
 
-shortlog_args=("$@")
+git_shortlog_args=("$@")
 
-git shortlog "${shortlog_args[@]}" \
+git shortlog "${git_shortlog_args[@]}" \
   | awk '
     /^[^ ]/ {
       sub(/ \([0-9]+\):$/, "")
