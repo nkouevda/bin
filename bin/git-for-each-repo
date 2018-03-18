@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git foreach [<options>] [--] <dir> <command>
+usage: git for-each-repo [<options>] [--] <dir> <command>
 
 Execute <command> in each git directory (one that contains a .git directory)
 under <dir>.
@@ -19,7 +19,7 @@ Options:
 Examples:
     Execute "git status" in each git directory under the current directory:
 
-        $ git foreach . git status
+        $ git for-each-repo . git status
 EOF
 }
 
