@@ -22,7 +22,7 @@ Modes:
     branch
         Select from branches.
 
-    ls-files
+    files
         Select from all tracked and untracked files, but not ignored files.
 
     status
@@ -36,7 +36,7 @@ Modes:
         Select from tags.
 
     Note: If <xargs command> is not given, the output of this command is
-    null-terminated for modes "ls-files", "status", and "status-unstaged".
+    null-terminated for modes "files", "status", and "status-unstaged".
 
 Examples:
     "git add" the selected path(s):
@@ -71,7 +71,17 @@ xargs_or_noop() {
       xargs_options+=("--null")
     fi
 
+    # e.g. `git status --porcelain` gives paths relative to repo root, not pwd,
+    # so we must `pushd` and `popd` in order for `xargs_command` to work
+    if [[ -n "$in_repo_root" ]]; then
+      pushd "$(git rev-parse --show-toplevel)" >/dev/null
+    fi
+
     xargs "${xargs_options[@]}" "${xargs_command[@]}"
+
+    if [[ -n "$in_repo_root" ]]; then
+      popd >/dev/null
+    fi
   else
     cat
   fi
@@ -112,6 +122,7 @@ fi
 mode="$1"
 xargs_command=("${@:2}")
 null_terminated=
+in_repo_root=
 
 case "$mode" in
   branch)
@@ -120,7 +131,7 @@ case "$mode" in
       | cut --characters=3- \
       | xargs_or_noop
     ;;
-  ls-files)
+  files)
     null_terminated="1"
     git ls-files --cached --others --exclude-standard -z \
       | fzf_wrapper \
@@ -128,6 +139,7 @@ case "$mode" in
     ;;
   status)
     null_terminated="1"
+    in_repo_root="1"
     git status --porcelain -z \
       | fzf_wrapper \
       | cut --zero-terminated --characters=4- \
@@ -135,6 +147,7 @@ case "$mode" in
     ;;
   status-unstaged)
     null_terminated="1"
+    in_repo_root="1"
     git status --porcelain -z \
       | sed --null-data '/^. /d' \
       | fzf_wrapper \
