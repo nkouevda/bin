@@ -22,4 +22,4 @@ To install in a different directory, set `prefix`:
 
 ## License
 
-Licensed under the [MIT License](http://www.opensource.org/licenses/MIT).
+[MIT License](LICENSE.txt)
