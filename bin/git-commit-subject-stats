@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git commit-subject-stats [<options>] [--] [<git shortlog args>]
+usage: git commit-subject-stats [<options>] [-- <git shortlog args>]
 
 For each user in the output of shortlog, print:
     (1) number of commits
@@ -12,6 +12,8 @@ For each user in the output of shortlog, print:
     (3) number of commits with subjects longer than 50 chars
     (4) ratio of (3) to (1)
     (5) name
+
+Arguments after -- are passed to git shortlog.
 
 Options:
     -h, --help

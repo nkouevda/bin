@@ -4,21 +4,15 @@ Various `git` utilities.
 
 ## Installation
 
-To `cp` all utilities to `~/bin`:
+Either symlink into your `bin` directory:
 
-    make
+    ln -fs "$(pwd -P)/bin"/* ~/bin
 
-To create symbolic links instead of copying, use `ln=1`:
+Or `cp` into your `bin` directory:
 
-    make ln=1
+    cp bin/* ~/bin
 
-To install selectively, specify the desired utilities:
-
-    make git-fzf
-
-To install in a different directory, set `prefix`:
-
-    make prefix=/usr/local
+Or add this `bin` directory to your `$PATH`.
 
 ## License
 

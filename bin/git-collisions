@@ -4,11 +4,12 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git collisions [<options>] [--] [<git rev-list args>]
+usage: git collisions [<options>] [-- <git rev-list args>]
 
 Print commit hash collisions.
 
-If no <git rev-list args> are specified, default to "--all".
+Arguments after -- are passed to git rev-list. If no <git rev-list args> are
+specified, default to "--all".
 
 Options:
     -d <n>, --digits <n>
