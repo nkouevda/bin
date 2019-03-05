@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git ctags [<options>] [-- <ctags args>]
+
+Update tags incrementally based on git metadata.
+
+Maintains a tags-metadata file alongside tags, to keep track of the commit for
+which tags were previously generated.
+
+Ignores uncommitted changes.
+
+Arguments after -- are passed to ctags.
+
+Options:
+    -c, --check
+        Only check whether up to date; do not update. Exit with status 0 if up
+        to date, and 1 otherwise.
+
+    -h, --help
+        Show this help message and exit.
+
+    -v, --verbose
+        Verbose output.
+EOF
+}
+
+debug() {
+  if [[ -n "$verbose" ]]; then
+    printf "debug: $1\n" "${@:2}" >&2
+  fi
+}
+
+check=
+verbose=
+
+while (( $# )); do
+  case "$1" in
+    -c|--check)
+      check="1"
+      ;;
+    -h|--help)
+      usage
+      exit
+      ;;
+    -v|--verbose)
+      verbose="1"
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+ctags_command=("ctags" "$@")
+current_commit="$(git rev-parse HEAD)"
+
+if [[ -r tags && -r tags-metadata ]]; then
+  previous_commit="$(awk '$1 == "commit:" { print $2; exit }' < tags-metadata)"
+  debug "previous commit: %s" "$previous_commit"
+  debug "current commit: %s" "$current_commit"
+
+  if [[ "$previous_commit" == "$current_commit" ]]; then
+    debug "tags-metadata is up to date"
+    exit 0
+  fi
+
+  debug "tags-metadata is outdated"
+  if [[ -n "$check" ]]; then
+    exit 1
+  fi
+
+  # This does NOT handle `\n` in filenames, but `ctags` can't anyway
+  mapfile -t files < <(git diff --name-only "$previous_commit..$current_commit")
+  debug "number of modified files: %s" "${#files[@]}"
+
+  debug "removing tags from modified files"
+  printf "%s\n" "${files[@]}" | awk '
+    FILENAME == "-" {
+      files[$0] = 1
+    }
+
+    FILENAME != "-" && !/^!/ && !($2 in files)
+  ' - tags > tags-common
+  mv tags-common tags
+
+  debug "adding new tags"
+  # `xargs` to avoid `Argument list too long`
+  printf "%s\n" "${files[@]}" \
+    | xargs --delimiter '\n' "${ctags_command[@]}" --append \
+    |& grep -v "^ctags: Warning: cannot open source file"
+else
+  debug "tags and/or tags-metadata does not exist"
+  if [[ -n "$check" ]]; then
+    exit 1
+  fi
+
+  debug "generating tags"
+  "${ctags_command[@]}"
+fi
+
+cat > tags-metadata <<EOF
+commit: $current_commit
+ref: $(git rev-parse --abbrev-ref HEAD)
+timestamp: $(date "+%s")
+EOF
+
+if [[ -n "$verbose" ]]; then
+  cat tags-metadata
+fi
