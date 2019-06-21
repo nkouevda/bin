@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git browse [<options>] [--] [<rev>]
+
+Open <rev> (any commit-ish, e.g. "master") in a browser.
+
+If no <rev> is given, default to "HEAD".
+
+Options:
+    -h, --help
+        Show this help message and exit.
+EOF
+}
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+rev="${1:-HEAD}"
+sha="$(git rev-parse --verify "$rev^{commit}")"
+log="$(git log -n 1 "$sha")"
+
+# e.g. Gerrit
+link="$(sed -n '/^    Reviewed-on: / { s///; p; q; }' <<<"$log")"
+if [[ -n "$link" ]]; then
+  exec open "$link"
+fi
+
+# Phabricator
+link="$(sed -n '/^    Differential Revision: / { s///; p; q; }' <<<"$log")"
+if [[ -n "$link" ]]; then
+  exec open "$link"
+fi
+
+remote="$(git remote get-url origin)"
+
+case "$remote" in
+  # GitHub
+  *github.com*)
+    repo="$(sed -E 's/^.*github\.com(:[0-9]+)?[:/]([A-Za-z0-9_-]+\/[A-Za-z0-9_-]+)(\.git)?$/\2/' <<<"$remote")"
+    exec open "https://github.com/$repo/commit/$sha"
+    ;;
+  # Unsupported
+  *)
+    printf "error: unsupported remote type: %s\n" "$remote" >&2
+    exit 1
+    ;;
+esac
