@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git author-stat-pre-process [<options>] [-- <git log args>]
+
+Pre-process git log for git author-stat-cached.
+
+Options:
+    -h, --help
+        Show this help message and exit.
+
+Arguments after -- are passed to git log.
+
+Examples:
+    git author-stat-pre-process > .git/author-stat-cache
+EOF
+}
+
+force=
+update=
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    -f|--force)
+      force="1"
+      ;;
+    -u|--update)
+      update="1"
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+git_log_args=("$@")
+cache_file=".git/author-stat-cache"
+
+if [[ -r "$cache_file" ]]; then
+  if [[ -n "$force" ]]; then
+    # No-op
+    :
+  elif [[ -n "$update" ]]; then
+    last_hash="$(head -n 1 "$cache_file" | awk '{ print $1 }')"
+    git_log_args+=("$last_hash..")
+    mv "$cache_file" "$cache_file.old"
+  else
+    printf "error: %s exists, and neither --force nor --update specified\n" "$cache_file" >&2
+    exit 1
+  fi
+else
+  # Ignore options if cache doesn't exist anyway
+  force=
+  update=
+fi
+
+git log --pretty='format:%H %aE' --shortstat "${git_log_args[@]}" \
+  | awk '
+    BEGIN {
+      OFS = "\t"
+    }
+
+    /^$/ {
+      next
+    }
+
+    /^[0-9a-f]/ {
+      hash = $1
+      author = $2
+      next
+    }
+
+    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+),\s+[0-9]+\s+deletions?\(-)$/ {
+      adds = $4
+      dels = $6
+    }
+
+    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+)$/ {
+      adds = $4
+      dels = 0
+    }
+
+    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+deletions?\(-)$/ {
+      adds = 0
+      dels = $4
+    }
+
+    {
+      print hash, author, adds, dels
+    }' > "$cache_file"
+
+if [[ -n "$update" ]]; then
+  mv "$cache_file" "$cache_file.new"
+  cat "$cache_file.new" "$cache_file.old" > "$cache_file"
+fi

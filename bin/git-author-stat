@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git author-stat [<options>] [-- <git log args>]
+
+Summarize additions, deletions, and net lines per author.
+
+By default, sort by net lines.
+
+Options:
+    -h, --help
+        Show this help message and exit.
+
+Arguments after -- are passed to git log.
+
+Examples:
+    All history from the current commit:
+
+        $ git author-stat
+
+    The most recent year, for a particular author:
+
+        $ git author-stat -- --author=nkouevda --since='1 year ago'
+EOF
+}
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+git_log_args=("$@")
+
+git log --pretty='format:author: %aE' --shortstat "${git_log_args[@]}" \
+  | awk '
+    /^author: / {
+      author = $2
+      commits[author] += 1
+    }
+
+    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+),\s+[0-9]+\s+deletions?\(-)$/ {
+      adds[author] += $4
+      dels[author] += $6
+    }
+
+    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+)$/ {
+      adds[author] += $4
+      dels[author] += 0
+    }
+
+    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+deletions?\(-)$/ {
+      adds[author] += 0
+      dels[author] += $4
+    }
+
+    END {
+      for (author in commits) {
+        printf "%9s %9d(+) %9d(-) %9d commits %31s\n", adds[author] - dels[author], adds[author], dels[author], commits[author], author
+      }
+    }' \
+  | sort --numeric-sort --reverse \
+  | less -FRX

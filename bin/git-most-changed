@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git most-changed [<options>] [-- <git log args>]
+
+List files sorted by number of commits.
+
+Options:
+    -h, --help
+        Show this help message and exit.
+
+Arguments after -- are passed to git log.
+
+Examples:
+    Determine most changed files in the past 1000 commits:
+
+        $ git most-changed -- --max-count 1000
+
+    Determine most changed files in the past week:
+
+        $ git most-changed -- --since "1 week ago"
+EOF
+}
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+git_log_args=("$@")
+
+# TODO(nkouevda): `--find-renames --find-copies`?
+git log --name-only --pretty='' "${git_log_args[@]}" \
+  | awk '
+    {
+      ++changed[$0]
+    }
+
+    END {
+      for (file in changed) {
+        print changed[file] "," file
+      }
+    }' \
+  | column -t -s, \
+  | sort -nr \
+  | less -FRX

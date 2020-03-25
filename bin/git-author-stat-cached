@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+usage: git author-stat-cached [<options>] [-- <git log args>]
+
+Cached version of git author-stat; relies on git author-stat-pre-process.
+
+Summarize additions, deletions, and net lines per author.
+
+By default, sort by net lines.
+
+Options:
+    -h, --help
+        Show this help message and exit.
+
+Examples:
+    git-author-stat-cached
+EOF
+}
+
+while (( $# )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf "error: invalid option: %s\n" "$1" >&2
+      exit 1
+      ;;
+    *)
+      printf "error: invalid argument: %s\n" "$1" >&2
+      exit 1
+      ;;
+  esac
+
+  shift
+done
+
+if (( $# )); then
+  usage
+  exit 1
+fi
+
+cache_file=".git/author-stat-cache"
+
+if [[ ! -r "$cache_file" ]]; then
+  printf "warning: %s does not exist; generating\n" "$cache_file" >&2
+  git author-stat-pre-process
+fi
+
+cat "$cache_file" \
+  | awk '
+    BEGIN {
+      OFS = "\t"
+    }
+
+    {
+      author = $2
+      commits[author] += 1
+      adds[author] += $3
+      dels[author] += $4
+    }
+
+    END {
+      for (author in commits) {
+        printf "%9s %9d(+) %9d(-) %9d commits %31s\n", adds[author] - dels[author], adds[author], dels[author], commits[author], author
+      }
+    }' \
+  | sort --numeric-sort --reverse \
+  | less -FRX

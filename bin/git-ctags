@@ -84,6 +84,8 @@ if [[ -r tags && -r tags-metadata ]]; then
   fi
 
   # This does NOT handle `\n` in filenames, but `ctags` can't anyway
+  # TODO(nkouevda): Tags for LHS of renames aren't removed; maybe also include:
+  # `git diff --name-status --diff-filter=R ... | awk '{ print $2 }'`
   mapfile -t files < <(git diff --name-only "$previous_commit..$current_commit")
   debug "number of modified files: %s" "${#files[@]}"
 
