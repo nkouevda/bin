@@ -58,17 +58,17 @@ git log --pretty='format:author: %aE' --shortstat "${git_log_args[@]}" \
       commits[author] += 1
     }
 
-    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+),\s+[0-9]+\s+deletions?\(-)$/ {
+    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\),[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
       adds[author] += $4
       dels[author] += $6
     }
 
-    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+)$/ {
+    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\)$/ {
       adds[author] += $4
       dels[author] += 0
     }
 
-    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+deletions?\(-)$/ {
+    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
       adds[author] += 0
       dels[author] += $4
     }

@@ -87,17 +87,17 @@ git log --pretty='format:%H %aE' --shortstat "${git_log_args[@]}" \
       next
     }
 
-    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+),\s+[0-9]+\s+deletions?\(-)$/ {
+    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\),[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
       adds = $4
       dels = $6
     }
 
-    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+insertions?\(\+)$/ {
+    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\)$/ {
       adds = $4
       dels = 0
     }
 
-    /^\s+[0-9]+\s+files?\s+changed,\s+[0-9]+\s+deletions?\(-)$/ {
+    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
       adds = 0
       dels = $4
     }
