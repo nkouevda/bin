@@ -54,26 +54,16 @@ git_log_args=("$@")
 # This should be `"${git_log_args[@]}"`, but bash < 4.4 treats empty arrays as unbound (i.e.
 # `git_log_args=()` under `set -u` would result in "unbound variable" here), so we hack around that
 # with `${git_log_args[@]:+"${git_log_args[@]}"}`
-git log --pretty='format:author: %aE' --shortstat ${git_log_args[@]:+"${git_log_args[@]}"} \
+git log --pretty='format:author %aE' --numstat ${git_log_args[@]:+"${git_log_args[@]}"} \
   | awk '
-    /^author: / {
+    ($1 == "author") {
       author = $2
       commits[author] += 1
     }
 
-    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\),[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
-      adds[author] += $4
-      dels[author] += $6
-    }
-
-    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\)$/ {
-      adds[author] += $4
-      dels[author] += 0
-    }
-
-    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
-      adds[author] += 0
-      dels[author] += $4
+    /^[0-9]/ {
+      adds[author] += $1
+      dels[author] += $2
     }
 
     END {

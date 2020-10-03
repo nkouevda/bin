@@ -74,39 +74,32 @@ fi
 # This should be `"${git_log_args[@]}"`, but bash < 4.4 treats empty arrays as unbound (i.e.
 # `git_log_args=()` under `set -u` would result in "unbound variable" here), so we hack around that
 # with `${git_log_args[@]:+"${git_log_args[@]}"}`
-git log --pretty='format:%H %aE' --shortstat ${git_log_args[@]:+"${git_log_args[@]}"} \
+git log --pretty='format:commit %H %aE' --numstat ${git_log_args[@]:+"${git_log_args[@]}"} \
   | awk '
     BEGIN {
       OFS = "\t"
     }
 
-    /^$/ {
-      next
-    }
-
-    /^[0-9a-f]/ {
-      hash = $1
-      author = $2
-      next
-    }
-
-    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\),[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
-      adds = $4
-      dels = $6
-    }
-
-    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+insertions?\(\+\)$/ {
-      adds = $4
+    ($1 == "commit") {
+      hash = $2
+      author = $3
+      adds = 0
       dels = 0
     }
 
-    /^[[:space:]]+[0-9]+[[:space:]]+files?[[:space:]]+changed,[[:space:]]+[0-9]+[[:space:]]+deletions?\(-\)$/ {
-      adds = 0
-      dels = $4
+    /^[0-9]/ {
+      adds += $1
+      dels += $2
     }
 
-    {
+    /^$/ {
       print hash, author, adds, dels
+    }
+
+    END {
+      if (hash) {
+        print hash, author, adds, dels
+      }
     }' > "$cache_file"
 
 if [[ -n "$update" ]]; then
