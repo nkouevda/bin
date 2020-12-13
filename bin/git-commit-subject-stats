@@ -43,12 +43,7 @@ while (( $# )); do
   shift
 done
 
-git_shortlog_args=("$@")
-
-# This should be `"${git_shortlog_args[@]}"`, but bash < 4.4 treats empty arrays as unbound (i.e.
-# `git_shortlog_args=()` under `set -u` would result in "unbound variable" here), so we hack around
-# that with `${git_shortlog_args[@]:+"${git_shortlog_args[@]}"}`
-git shortlog ${git_shortlog_args[@]:+"${git_shortlog_args[@]}"} \
+git shortlog "$@" \
   | awk '
     /^[^ ]/ {
       sub(/ \([0-9]+\):$/, "")

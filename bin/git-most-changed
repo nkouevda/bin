@@ -47,14 +47,9 @@ while (( $# )); do
   shift
 done
 
-git_log_args=("$@")
-
 # TODO(nkouevda): `--find-renames --find-copies`?
 
-# This should be `"${git_log_args[@]}"`, but bash < 4.4 treats empty arrays as unbound (i.e.
-# `git_log_args=()` under `set -u` would result in "unbound variable" here), so we hack around that
-# with `${git_log_args[@]:+"${git_log_args[@]}"}`
-git log --name-only --pretty='' ${git_log_args[@]:+"${git_log_args[@]}"} \
+git log --name-only --pretty='' "$@" \
   | awk '
     {
       ++changed[$0]

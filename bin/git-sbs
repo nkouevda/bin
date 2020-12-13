@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Keep the first of each set of lines with identical prefix before refs
+git show-branch --color "$@" \
+  | awk '
+    {
+      a = $0
+      sub(/ \[.+$/, "", a)
+      if (!(a in uniq)) {
+        print
+      }
+      ++uniq[a]
+    }' \
+  | less -FRX
