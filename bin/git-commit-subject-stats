@@ -62,4 +62,4 @@ git shortlog "$@" \
       chars = 0
       too_long = 0
     }' \
-  | less -FRX
+  | less --quit-if-one-screen --raw-control-chars --no-init

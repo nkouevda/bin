@@ -13,4 +13,4 @@ git show-branch --color "$@" \
       }
       ++uniq[a]
     }' \
-  | less -FRX
+  | less --quit-if-one-screen --raw-control-chars --no-init
