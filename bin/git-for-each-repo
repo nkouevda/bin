@@ -59,6 +59,7 @@ dir="$1"
 execdir_command=("${@:2}")
 
 find -- "$dir" \
+  -maxdepth 2 \
   -type d \
   -name '.git' \
   $print \

@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git author-stat-cached [<options>] [-- <git log args>]
+usage: git author-stat-cached [<options>]
 
 Cached version of git author-stat; relies on git author-stat-pre-process.
 

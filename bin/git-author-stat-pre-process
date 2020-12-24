@@ -12,6 +12,12 @@ Options:
     -h, --help
         Show this help message and exit.
 
+    --overwrite
+        If cache file already exists, throw it out and start from scratch.
+
+    --update
+        If cache file already exists, update it.
+
 Arguments after -- are passed to git log.
 
 Examples:
@@ -19,7 +25,7 @@ Examples:
 EOF
 }
 
-force=
+overwrite=
 update=
 
 while (( $# )); do
@@ -28,10 +34,10 @@ while (( $# )); do
       usage
       exit
       ;;
-    -f|--force)
-      force="1"
+    --overwrite)
+      overwrite="1"
       ;;
-    -u|--update)
+    --update)
       update="1"
       ;;
     --)
@@ -54,20 +60,16 @@ git_log_args=("$@")
 cache_file=".git/author-stat-cache"
 
 if [[ -r "$cache_file" ]]; then
-  if [[ -n "$force" ]]; then
-    # No-op
-    :
-  elif [[ -n "$update" ]]; then
+  if [[ -n "$update" ]]; then
     last_hash="$(head -n 1 "$cache_file" | awk '{ print $1 }')"
     git_log_args+=("$last_hash..")
-    mv "$cache_file" "$cache_file.old"
-  else
-    printf "error: %s exists, and neither --force nor --update specified\n" "$cache_file" >&2
+  elif [[ -z "$overwrite" ]]; then
+    printf "error: %s exists, and neither --overwrite nor --update specified\n" "$cache_file" >&2
     exit 1
   fi
 else
-  # Ignore options if cache doesn't exist anyway
-  force=
+  # Ignore options if cache file doesn't exist
+  overwrite=
   update=
 fi
 
@@ -100,9 +102,10 @@ git log --pretty='format:commit %H %aE' --numstat ${git_log_args[@]:+"${git_log_
       if (hash) {
         print hash, author, adds, dels
       }
-    }' > "$cache_file"
+    }' > "$cache_file.new"
 
 if [[ -n "$update" ]]; then
-  mv "$cache_file" "$cache_file.new"
-  cat "$cache_file.new" "$cache_file.old" > "$cache_file"
+  cat "$cache_file" >> "$cache_file.new"
 fi
+
+mv "$cache_file.new" "$cache_file"
