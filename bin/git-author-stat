@@ -67,4 +67,4 @@ git log --pretty='format:author %aE' --numstat "$@" \
       }
     }' \
   | sort --numeric-sort --reverse \
-  | less --quit-if-one-screen --raw-control-chars --no-init
+  | less --quit-if-one-screen --Raw-control-chars --no-init

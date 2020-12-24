@@ -73,4 +73,4 @@ git rev-list "${git_rev_list_args[@]}" \
     }' \
   | sort \
   | uniq --check-chars="$digits" --group \
-  | less --quit-if-one-screen --raw-control-chars --no-init
+  | less --quit-if-one-screen --Raw-control-chars --no-init
