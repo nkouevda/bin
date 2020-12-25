@@ -1,6 +1,10 @@
-# git-util
+# bin
 
-Various `git` utilities.
+Various shell utilities.
+
+See also my
+[.bash_functions](https://github.com/nkouevda/dotfiles/blob/master/.bash_functions)
+and [.gitconfig](https://github.com/nkouevda/dotfiles/blob/master/.gitconfig).
 
 ## Installation
 
