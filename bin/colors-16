@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+text="${1:-gYw}"
+padding="2"
+margin="1"
+
+weights=("" "1")
+fs=("" ";"{30..37})
+bs=("" ";"{40..47})
+
+printf "%b%4s" "\e[0m" ""
+
+for b in "${bs[@]}"; do
+  printf "%$((${#text} + 2 * ${padding} + ${margin}))s" "${b}m"
+done
+
+printf "\n"
+
+for f in "${fs[@]}"; do
+  for weight in "${weights[@]}"; do
+    printf "%6s" "${weight}${f}m"
+
+    for b in "${bs[@]}"; do
+      printf "%${margin}s%b" "" "\e[${weight}${f}${b}m"
+      printf "%${padding}s%s%${padding}s" "" "${text}" ""
+      printf "%b" "\e[0m"
+    done
+
+    printf "\n"
+  done
+done

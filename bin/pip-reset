@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+pip="${1:-pip}"
+
+"$pip" --version
+
+read -r -p "Reset? [y/N]: "
+case "$REPLY" in
+  [Yy]|[Yy][Ee][Ss])
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+
+# Uninstall everything
+pip freeze \
+  | sed 's/==.*//' \
+  | xargs --no-run-if-empty --verbose pip uninstall --yes
+
+# Install basics
+"$pip" install ipdb twine virtualenv
