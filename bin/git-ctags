@@ -83,27 +83,32 @@ if [[ -r tags && -r tags-metadata ]]; then
     exit 1
   fi
 
+  modified_files="$(mktemp "/tmp/git-ctags.modified-files.XXXXXX")"
+  unchanged_tags="$(mktemp "/tmp/git-ctags.unchanged-tags.XXXXXX")"
+
   # This does NOT handle `\n` in filenames, but `ctags` can't anyway
   # TODO(nkouevda): Tags for LHS of renames aren't removed; maybe also include:
   # `git diff --name-status --diff-filter=R ... | awk '{ print $2 }'`
-  mapfile -t files < <(git diff --name-only "$previous_commit..$current_commit")
-  debug "number of modified files: %s" "${#files[@]}"
+  git diff --name-only "$previous_commit..$current_commit" > "$modified_files"
+  debug "number of modified files: %s" "$(wc -l <"$modified_files")"
 
-  debug "removing tags from modified files"
-  printf "%s\n" "${files[@]}" | awk '
-    FILENAME == "-" {
+  debug "removing tags for modified files"
+  awk '
+    FILENAME != "tags" {
       files[$0] = 1
     }
 
-    FILENAME != "-" && !/^!/ && !($2 in files)
-  ' - tags > tags-common
-  mv tags-common tags
+    FILENAME == "tags" && !/^!/ && !($2 in files)
+  ' "$modified_files" tags > "$unchanged_tags"
+  mv "$unchanged_tags" tags
 
   debug "adding new tags"
-  # `xargs` to avoid `Argument list too long`
-  printf "%s\n" "${files[@]}" \
-    | xargs --delimiter '\n' "${ctags_command[@]}" --append \
-    |& grep -v "^ctags: Warning: cannot open source file"
+  # For compatibility with both BSD and GNU xargs, we use `tr '\n' '\0' | xargs -0` instead of
+  # `xargs --delimiter '\n'`
+  cat "$modified_files" \
+    | tr '\n' '\0' \
+    | xargs -0 "${ctags_command[@]}" --append 2>&1 \
+    | grep -v "^ctags: Warning: cannot open source file"
 else
   debug "tags and/or tags-metadata does not exist"
   if [[ -n "$check" ]]; then
