@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+import sys
+from urllib import parse
+
+
+def main():
+  try:
+    for line in sys.stdin:
+      print(parse.unquote(line.rstrip()))
+
+    return 0
+  except KeyboardInterrupt:
+    # ^C: exit quietly (but still 1, not 0) instead of printing stack trace
+    return 1
+
+
+if __name__ == '__main__':
+  sys.exit(main())
