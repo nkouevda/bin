@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git for-each-repo [<options>] [--] <dir> <command>
+usage: find-git [<options>] [--] <dir> <command>
 
 Execute <command> in each git directory (one that contains a .git directory)
 under <dir>.
@@ -13,26 +13,18 @@ Options:
     -h, --help
         Show this help message and exit.
 
-    -q, --quiet
-        Do not print each directory name before executing.
-
 Examples:
     Execute "git status" in each git directory under the current directory:
 
-        $ git for-each-repo . git status
+        $ find-git . git status
 EOF
 }
-
-print="-print"
 
 while (( $# )); do
   case "$1" in
     -h|--help)
       usage
       exit
-      ;;
-    -q|--quiet)
-      print=
       ;;
     --)
       shift
@@ -58,9 +50,10 @@ fi
 dir="$1"
 execdir_command=("${@:2}")
 
+# `-execdir sh -c 'echo ...'` is like `-print`, but colored, and without trailing `/.git`
 find -- "$dir" \
-  -maxdepth 2 \
+  -maxdepth 3 \
   -type d \
   -name '.git' \
-  $print \
+  -execdir sh -c 'echo "$(tput setaf 4)$PWD$(tput sgr0)"' \; \
   -execdir "${execdir_command[@]}" \;
