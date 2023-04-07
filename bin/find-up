@@ -4,30 +4,32 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: find-up <file> [<dir>]
+usage: find-up <dir> <file>...
 
-Find <file> in <dir> (default: pwd) or the nearest parent directory with <file>.
+Find any <file> in <dir> or the nearest parent directory of <dir>.
 
 Examples:
     Find nearest BUILD file:
 
-        $ find-up BUILD
+        $ find-up . BUILD BUILD.bazel
 EOF
 }
 
-if (( $# < 1 || $# > 2 )); then
+if (( $# < 2 )); then
   usage
   exit 1
 fi
 
-file="$1"
-dir="${2:-.}"
+dir="$1"
+files=("${@:2}")
 
 while [[ "$dir" != / ]]; do
-  if [[ -r "$dir/$file" ]]; then
-    printf "%s\n" "$dir/$file"
-    exit 0
-  fi
+  for file in "${files[@]}"; do
+    if [[ -r "$dir/$file" ]]; then
+      printf "%s\n" "$dir/$file"
+      exit 0
+    fi
+  done
 
   dir="$(readlink -f "$dir"/..)"
 done
