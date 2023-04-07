@@ -6,7 +6,7 @@ usage() {
   cat <<EOF
 usage: git browse [<options>] [--] [<rev>]
 
-Open <rev> (any commit-ish, e.g. "master") in a browser.
+Open <rev> (any commit-ish, e.g. "main") in a browser.
 
 If no <rev> is given, default to "HEAD".
 
