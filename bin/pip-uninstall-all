@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+pip="${1:-pip}"
+
+"$pip" --version
+
+prompt-yes-no 'Uninstall all packages?' || exit 1
+
+# Uninstall everything, except for pip itself!
+"$pip" list --format=json \
+  | jq --raw-output '.[].name' \
+  | grep -v '^pip$' \
+  | xargs --no-run-if-empty --verbose "$pip" uninstall --yes
