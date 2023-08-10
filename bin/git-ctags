@@ -105,7 +105,9 @@ if [[ -r tags && -r tags-metadata ]]; then
   debug "adding new tags"
   # For compatibility with both BSD and GNU xargs, we use `tr '\n' '\0' | xargs -0` instead of
   # `xargs --delimiter '\n'`
-  tr '\n' '\0' "$modified_files" \
+  # shellcheck disable=SC2002
+  cat "$modified_files" \
+    | tr '\n' '\0' \
     | xargs -0 "${ctags_command[@]}" --append 2>&1 \
     | grep -v "^ctags: Warning: cannot open source file"
 
