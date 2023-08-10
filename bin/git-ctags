@@ -30,7 +30,7 @@ EOF
 
 debug() {
   if [[ -n "$verbose" ]]; then
-    printf "debug: $1\n" "${@:2}" >&2
+    printf "debug: %s\n" "$@" >&2
   fi
 }
 
@@ -70,8 +70,8 @@ current_commit="$(git rev-parse HEAD)"
 
 if [[ -r tags && -r tags-metadata ]]; then
   previous_commit="$(awk '$1 == "commit:" { print $2; exit }' < tags-metadata)"
-  debug "previous commit: %s" "$previous_commit"
-  debug "current commit: %s" "$current_commit"
+  debug "previous commit: $previous_commit"
+  debug "current commit: $current_commit"
 
   if [[ "$previous_commit" == "$current_commit" ]]; then
     debug "tags-metadata is up to date"
@@ -90,7 +90,7 @@ if [[ -r tags && -r tags-metadata ]]; then
   # TODO(nkouevda): Tags for LHS of renames aren't removed; maybe also include:
   # `git diff --name-status --diff-filter=R ... | awk '{ print $2 }'`
   git diff --name-only "$previous_commit..$current_commit" > "$modified_files"
-  debug "number of modified files: %s" "$(wc -l <"$modified_files")"
+  debug "number of modified files: $(wc -l <"$modified_files")"
 
   debug "removing tags for modified files"
   awk '
@@ -105,8 +105,7 @@ if [[ -r tags && -r tags-metadata ]]; then
   debug "adding new tags"
   # For compatibility with both BSD and GNU xargs, we use `tr '\n' '\0' | xargs -0` instead of
   # `xargs --delimiter '\n'`
-  cat "$modified_files" \
-    | tr '\n' '\0' \
+  tr '\n' '\0' "$modified_files" \
     | xargs -0 "${ctags_command[@]}" --append 2>&1 \
     | grep -v "^ctags: Warning: cannot open source file"
 else

@@ -56,4 +56,4 @@ find -- "$dir" \
   -type d \
   -name '.git' \
   -execdir sh -c 'echo "$(tput setaf 4)$PWD$(tput sgr0)"' \; \
-  -execdir "${execdir_command[@]}" \;
+  -execdir sh -c "${execdir_command[*]}" \;

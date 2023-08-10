@@ -60,7 +60,7 @@ fzf_wrapper() {
 }
 
 xargs_or_noop() {
-  if [[ -n "${xargs_command[@]}" ]]; then
+  if (( "${#xargs_command[@]}" )); then
     local xargs_options=("--no-run-if-empty")
 
     if [[ -n "$verbose" ]]; then

@@ -20,7 +20,7 @@ print-line() {
   local start end i
   start="$1"
   end="$2"
-  for (( i = $start; i < $end; ++i )); do
+  for (( i = start; i < end; ++i )); do
     printf "\e[38;5;%dm %3d " "$i" "$i"
     printf "\e[48;5;%dm     " "$i"
     printf "\e[0m"
@@ -33,7 +33,7 @@ print-group() {
   start="$1"
   end="$2"
   incr="$3"
-  for (( i = $start; i < $end; i += $incr )); do
+  for (( i = start; i < end; i += incr )); do
     print-line "$i" "$(( i + incr ))"
   done
 }
@@ -85,7 +85,7 @@ else
   printf "%b%8s" "\e[0m" ""
 
   for b in "${bs[@]}"; do
-    printf "%$(( ${#text} + 2 * ${padding} + ${margin} ))s" "${b}m"
+    printf "%$(( ${#text} + 2 * padding + margin ))s" "${b}m"
   done
 
   printf "\n"

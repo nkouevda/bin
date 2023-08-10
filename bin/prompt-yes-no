@@ -5,7 +5,7 @@ set -euo pipefail
 prompt='[y/N]: '
 
 if (( $# )); then
-  prompt="$@ $prompt"
+  prompt="$* $prompt"
 fi
 
 read -r -p "$prompt"

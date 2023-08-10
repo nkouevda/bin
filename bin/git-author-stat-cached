@@ -56,6 +56,7 @@ if [[ ! -r "$cache_file" ]]; then
   git author-stat-pre-process
 fi
 
+# shellcheck disable=SC2002
 cat "$cache_file" \
   | awk '
     BEGIN {
