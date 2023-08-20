@@ -50,10 +50,12 @@ fi
 dir="$1"
 execdir_command=("${@:2}")
 
-# `-execdir sh -c 'echo ...'` is like `-print`, but colored, and without trailing `/.git`
+# tput + pwd is like `-print`, but colored, and without the trailing `/.git`
 find -- "$dir" \
   -maxdepth 3 \
   -type d \
-  -name '.git' \
-  -execdir sh -c 'echo "$(tput setaf 4)$PWD$(tput sgr0)"' \; \
+  -name .git \
+  -execdir tput setaf 4 \; \
+  -execdir pwd \; \
+  -execdir tput sgr0 \; \
   -execdir sh -c "${execdir_command[*]}" \;
