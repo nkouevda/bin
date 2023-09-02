@@ -12,6 +12,10 @@ Options:
     -h, --help
         Show this help message and exit.
 
+    -maxdepth <n>, --maxdepth <n>
+        Descend at most <n> levels (default: 3). This option is prefixed with
+        one - for consistency with find(1), but --maxdepth is also accepted.
+
     -q, --quiet
         Do not print each directory before running <command>.
 
@@ -28,6 +32,7 @@ Examples:
 EOF
 }
 
+maxdepth=3
 # Like `-print`, but colored, and without the trailing `/.git`
 execdir_colored_pwd="\
   -execdir tput setaf 4 ; \
@@ -40,6 +45,10 @@ while (( $# )); do
     -h|--help)
       usage
       exit
+      ;;
+    -maxdepth|--maxdepth)
+      shift
+      maxdepth="$1"
       ;;
     -q|--quiet)
       execdir_colored_pwd=
@@ -69,7 +78,7 @@ dir="$1"
 command=("${@:2}")
 
 find -- "$dir" \
-  -maxdepth 3 \
+  -maxdepth "$maxdepth" \
   -type d \
   -name .git \
   -execdir bash -c 'git rev-parse --is-inside-work-tree &>/dev/null' \; \
