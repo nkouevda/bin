@@ -59,7 +59,7 @@ remote="$(git remote get-url origin)"
 case "$remote" in
   # GitHub
   *github.com*)
-    repo="$(sed -E 's/^.*github\.com(:[0-9]+)?[:/]([A-Za-z0-9_-]+\/[A-Za-z0-9_-]+)(\.git)?$/\2/' <<<"$remote")"
+    repo="$(sed -E 's/^.*github\.com(:[0-9]+)?[:/]([A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+)(\.git)?$/\2/' <<<"$remote")"
     exec open "https://github.com/$repo/commit/$sha"
     ;;
   # Unsupported
