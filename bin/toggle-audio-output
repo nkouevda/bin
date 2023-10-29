@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+headphones='External Headphones'
+monitor='LG UltraFine Display Audio'
+
+# NOTE: Requires `brew install switchaudio-osx`, and full path so that karabiner can run this
+if [[ "$(/opt/homebrew/bin/SwitchAudioSource -t output -c)" == "$headphones" ]]; then
+  /opt/homebrew/bin/SwitchAudioSource -t output -s "$monitor"
+else
+  /opt/homebrew/bin/SwitchAudioSource -t output -s "$headphones"
+fi
