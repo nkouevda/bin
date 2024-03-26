@@ -40,16 +40,17 @@ done
 
 rev="${1:-HEAD}"
 sha="$(git rev-parse --verify "$rev^{commit}")"
-log="$(git log -n 1 "$sha")"
+subject="$(git log -n 1 --pretty='format:%s' "$sha")"
+body="$(git log -n 1 --pretty='format:%b' "$sha")"
 
 # e.g. Gerrit
-link="$(sed -n '/^    Reviewed-on: / { s///; p; q; }' <<<"$log")"
+link="$(sed -n '/^Reviewed-on: / { s///; p; q; }' <<<"$body")"
 if [[ -n "$link" ]]; then
   exec printf "%s\n" "$link"
 fi
 
 # Phabricator
-link="$(sed -n '/^    Differential Revision: / { s///; p; q; }' <<<"$log")"
+link="$(sed -n '/^Differential Revision: / { s///; p; q; }' <<<"$body")"
 if [[ -n "$link" ]]; then
   exec printf "%s\n" "$link"
 fi
@@ -60,7 +61,12 @@ case "$remote" in
   # GitHub
   *github.com*)
     repo="$(sed -E 's/^.*github\.com(:[0-9]+)?[:/]([A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+)$/\2/' <<<"$remote")"
-    exec printf "https://github.com/%s/commit/%s\n" "${repo%.git}" "$sha"
+    pr="$(sed -nE '/^.*\(#([0-9]+)\)$/ { s//\1/; p; q; }' <<<"$subject")"
+    if [[ -n "$pr" ]]; then
+      exec printf "https://github.com/%s/pull/%s\n" "${repo%.git}" "$pr"
+    else
+      exec printf "https://github.com/%s/commit/%s\n" "${repo%.git}" "$sha"
+    fi
     ;;
   # Unsupported
   *)
