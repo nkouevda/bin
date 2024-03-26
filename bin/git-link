@@ -4,9 +4,9 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-usage: git browse [<options>] [--] [<rev>]
+usage: git link [<options>] [--] [<rev>]
 
-Open <rev> (any commit-ish, e.g. "main") in a browser.
+Print a link for <rev> (any commit-ish, e.g. "main").
 
 If no <rev> is given, default to "HEAD".
 
@@ -45,13 +45,13 @@ log="$(git log -n 1 "$sha")"
 # e.g. Gerrit
 link="$(sed -n '/^    Reviewed-on: / { s///; p; q; }' <<<"$log")"
 if [[ -n "$link" ]]; then
-  exec open "$link"
+  exec printf "%s\n" "$link"
 fi
 
 # Phabricator
 link="$(sed -n '/^    Differential Revision: / { s///; p; q; }' <<<"$log")"
 if [[ -n "$link" ]]; then
-  exec open "$link"
+  exec printf "%s\n" "$link"
 fi
 
 remote="$(git remote get-url origin)"
@@ -60,7 +60,7 @@ case "$remote" in
   # GitHub
   *github.com*)
     repo="$(sed -E 's/^.*github\.com(:[0-9]+)?[:/]([A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+)$/\2/' <<<"$remote")"
-    exec open "https://github.com/${repo%.git}/commit/$sha"
+    exec printf "https://github.com/%s/commit/%s\n" "${repo%.git}" "$sha"
     ;;
   # Unsupported
   *)
