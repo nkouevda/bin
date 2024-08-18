@@ -2,12 +2,25 @@
 
 set -euo pipefail
 
+switch-to() {
+  for target in "$@"; do
+    if /opt/homebrew/bin/SwitchAudioSource -t output -s "$target"; then
+      return
+    fi
+  done
+}
+
+airpods='nkpods'
 headphones='External Headphones'
 monitor='LG UltraFine Display Audio'
 
 # NOTE: Requires `brew install switchaudio-osx`, and full path so that karabiner can run this
-if [[ "$(/opt/homebrew/bin/SwitchAudioSource -t output -c)" == "$headphones" ]]; then
-  /opt/homebrew/bin/SwitchAudioSource -t output -s "$monitor"
+current="$(/opt/homebrew/bin/SwitchAudioSource -t output -c)"
+
+if [[ "$current" == "$airpods" ]]; then
+  switch-to "$headphones" "$monitor"
+elif [[ "$current" == "$headphones" ]]; then
+  switch-to "$monitor" "$airpods"
 else
-  /opt/homebrew/bin/SwitchAudioSource -t output -s "$headphones"
+  switch-to "$airpods" "$headphones"
 fi
