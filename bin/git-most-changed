@@ -61,5 +61,5 @@ git log --name-only --pretty='' "$@" \
       }
     }' \
   | column -t -s, \
-  | sort --numeric-sort --reverse \
+  | sort -nr \
   | less --quit-if-one-screen --Raw-control-chars --no-init

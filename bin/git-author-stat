@@ -66,5 +66,5 @@ git log --pretty='format:author %aE' --numstat "$@" \
         printf "%9s %9d(+) %9d(-) %9d commits %31s\n", adds[author] - dels[author], adds[author], dels[author], commits[author], author
       }
     }' \
-  | sort --numeric-sort --reverse \
+  | sort -nr \
   | less --quit-if-one-screen --Raw-control-chars --no-init
