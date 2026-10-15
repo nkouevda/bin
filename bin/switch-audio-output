@@ -12,15 +12,15 @@ switch-to() {
 
 airpods='nkpods'
 headphones='External Headphones'
-monitor='LG UltraFine Display Audio'
+mbp='MacBook Pro Speakers'
 
 # NOTE: Requires `brew install switchaudio-osx`, and full path so that karabiner can run this
 current="$(/opt/homebrew/bin/SwitchAudioSource -t output -c)"
 
 if [[ "$current" == "$airpods" ]]; then
-  switch-to "$headphones" "$monitor"
+  switch-to "$headphones" "$mbp"
 elif [[ "$current" == "$headphones" ]]; then
-  switch-to "$monitor" "$airpods"
+  switch-to "$airpods" "$mbp" 
 else
   switch-to "$airpods" "$headphones"
 fi
