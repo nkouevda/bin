@@ -2,7 +2,31 @@
 
 set -euo pipefail
 
-# TODO(nkouevda): Make sure __version__.py matches git tag
+version_py="$(rg --no-line-number -o '"([^"]*)"' -r '$1' */__version__.py 2>/dev/null || true)"
+if [[ -z "$version_py" ]]; then
+  printf "error: __version__.py not found\n" >&2
+  exit 1
+else
+  printf "info: __version__.py: %s\n" "$version_py"
+fi
+
+head_tag="$(git tag --points-at HEAD)"
+if [[ -z "$head_tag" ]]; then
+  printf "error: HEAD is not tagged\n" >&2
+  exit 1
+else
+  printf "info: HEAD tag: %s\n" "$head_tag"
+fi
+
+if [[ "v$version_py" != "$head_tag" ]]; then
+  printf "error: __version__.py does not match HEAD tag: %s != %s\n" "v$version_py" "$head_tag" >&2
+  exit 1
+else
+  printf "info: __version__.py matches HEAD tag\n"
+fi
+
+prompt-yes-no "build and publish?" || exit 1
+
 uv build
 uv publish dist/*
 git xdft
