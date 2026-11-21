@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+set -x
+
+formula="${1:?missing formula}"
+version="${2:?missing version}"
+formula_file="Formula/$formula.rb"
+
+if [[ "$version" != v* ]]; then
+  printf "error: version must start with v: %s\n" "$version" >&2
+  exit 1
+fi
+
+cd /opt/homebrew/Library/Taps/nkouevda/homebrew-nkouevda/
+
+# `brew bump-formula-pr` doesn't have an equivalent of `--ignore-main-package-cooldown`,
+# so manually fetch and sed `url` and `sha256`, and then `brew update-python-resources`
+{
+  read -r url
+  read -r sha256
+} < <(
+  curl -fLSs "https://pypi.org/pypi/$formula/$version/json" \
+    | jq -r '.urls[] | select(.packagetype=="sdist") | .url, .digests.sha256'
+)
+
+sed "s|^  url .*|  url \"$url\"|; s|^  sha256 .*|  sha256 \"$sha256\"|" -i "$formula_file"
+
+brew update-python-resources --ignore-main-package-cooldown --package-name "$formula" "$formula"
+
+git add "$formula_file"
+git commit -m "$formula $version"
