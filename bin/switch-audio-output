@@ -20,7 +20,7 @@ current="$(/opt/homebrew/bin/SwitchAudioSource -t output -c)"
 if [[ "$current" == "$airpods" ]]; then
   switch-to "$headphones" "$mbp"
 elif [[ "$current" == "$headphones" ]]; then
-  switch-to "$airpods" "$mbp" 
+  switch-to "$airpods" "$mbp"
 else
   switch-to "$airpods" "$headphones"
 fi
